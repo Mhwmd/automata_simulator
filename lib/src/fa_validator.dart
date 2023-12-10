@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
+import 'dfa.dart';
 import 'fa_state.dart';
 
 class FAValidator {
@@ -38,5 +39,39 @@ class FAValidator {
       (acceptingStates) => acceptingStates.every(states.contains),
       (_) => 'All accepting states must belong to the set of states.',
     );
+  }
+
+  static Either<String, DFATransitionFn<T>> ensureAllDFATransitionsValid<T>(
+    DFATransitionFn<T> transitions,
+    Set<FAState<T>> states,
+    Set<String> alphabet,
+  ) {
+    return Either.fromPredicate(
+      transitions,
+      (transitions) {
+        return transitions.entries.every((fn) {
+          final transition = (state: fn.key.$1, symbol: fn.key.$2, nextState: fn.value);
+
+          return states.contains(transition.state) &&
+              states.contains(transition.nextState) &&
+              alphabet.contains(transition.symbol);
+        });
+      },
+      (_) {
+        return 'All transitions in the transition function must have states and symbols that belong to the defined sets (states and alphabet).';
+      },
+    );
+  }
+
+  static bool isValidDFA<T>(DFA<T> dfa) {
+    final dfaValidations = [
+      FAValidator.ensureStatesExist(dfa.states),
+      FAValidator.ensureSymbolsValid(dfa.alphabet),
+      FAValidator.ensureAllDFATransitionsValid(dfa.transitions, dfa.states, dfa.alphabet),
+      FAValidator.ensureInitialStateExists(dfa.initialState, dfa.states),
+      FAValidator.ensureAcceptingStatesExists(dfa.acceptingStates, dfa.states),
+    ];
+
+    return dfaValidations.all((validation) => validation.isRight());
   }
 }
