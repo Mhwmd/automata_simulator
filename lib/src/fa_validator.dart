@@ -34,6 +34,8 @@ class FAValidator {
     Set<FAState<T>> acceptingStates,
     Set<FAState<T>> states,
   ) {
+    if (acceptingStates.isEmpty) return Left('At least one accepting state needed for FA');
+
     return Either.fromPredicate(
       acceptingStates,
       (acceptingStates) => acceptingStates.every(states.contains),
