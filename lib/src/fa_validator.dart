@@ -9,7 +9,7 @@ class FAValidator {
   static Either<String, Set<FAState<T>>> ensureStatesExist<T>(Set<FAState<T>> states) {
     return Either.fromPredicate(
       states,
-      (r) => r.isNotEmpty,
+      (states) => states.isNotEmpty,
       (_) => 'At least one state needed for FA',
     );
   }
