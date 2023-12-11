@@ -4,8 +4,8 @@ import 'package:fpdart/fpdart.dart';
 // DFA for accepting integer and float numbers without sign
 Either<String, DFA<String>> createNumberDFA() {
   final states = {FAState('A'), FAState('B'), FAState('C'), FAState('D')};
-  final Set<String> digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  final Set<String> alphabet = {...digits, '.'};
+  final digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  final alphabet = {...digits, '.'};
 
   final DFATransitionFn<String> transitions = {
     for (var symbol in digits) (FAState('A'), symbol): FAState('B'),
@@ -16,7 +16,7 @@ Either<String, DFA<String>> createNumberDFA() {
   };
 
   final initialState = FAState('A');
-  final finalStates = <FAState<String>>{FAState('B'), FAState('D')};
+  final finalStates = {FAState('B'), FAState('D')};
 
   return DFA.createDFA(states, alphabet, transitions, initialState, finalStates);
 }
@@ -24,7 +24,7 @@ Either<String, DFA<String>> createNumberDFA() {
 // DFA that accepts inputs where |w| mod 3 = 0 on alphabet {a, b}
 Either<String, DFA<int>> createDivisibilityOfThreeDFA() {
   final states = {FAState(1), FAState(2), FAState(3)};
-  final Set<String> alphabet = {'a', 'b'};
+  final alphabet = {'a', 'b'};
 
   final DFATransitionFn<int> transitions = {
     for (var symbol in alphabet) (FAState(1), symbol): FAState(2),
@@ -33,7 +33,7 @@ Either<String, DFA<int>> createDivisibilityOfThreeDFA() {
   };
 
   final initialState = FAState(1);
-  final finalStates = <FAState<int>>{FAState(1)};
+  final finalStates = {FAState(1)};
 
   return DFA.createDFA(states, alphabet, transitions, initialState, finalStates);
 }
