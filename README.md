@@ -66,9 +66,9 @@ Either<String, DFA<String>> createDFA() {
   };
 
   final initialState = FAState('q0');
-  final finalStates = {FAState('q1')};
+  final acceptingStates = {FAState('q1')};
 
-  return DFA.createDFA(states, binaryAlphabet, transitions, initialState, finalStates);
+  return DFA.createDFA(states, binaryAlphabet, transitions, initialState, acceptingStates);
 }
 ```
 

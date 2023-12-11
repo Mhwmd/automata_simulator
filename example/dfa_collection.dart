@@ -16,9 +16,9 @@ Either<String, DFA<String>> createNumberDFA() {
   };
 
   final initialState = FAState('A');
-  final finalStates = {FAState('B'), FAState('D')};
+  final acceptingStates = {FAState('B'), FAState('D')};
 
-  return DFA.createDFA(states, alphabet, transitions, initialState, finalStates);
+  return DFA.createDFA(states, alphabet, transitions, initialState, acceptingStates);
 }
 
 // DFA that accepts inputs where |w| mod 3 = 0 on alphabet {a, b}
@@ -33,7 +33,25 @@ Either<String, DFA<int>> createDivisibilityOfThreeDFA() {
   };
 
   final initialState = FAState(1);
-  final finalStates = {FAState(1)};
+  final acceptingStates = {FAState(1)};
 
-  return DFA.createDFA(states, alphabet, transitions, initialState, finalStates);
+  return DFA.createDFA(states, alphabet, transitions, initialState, acceptingStates);
+}
+
+// For example the below DFA with alphabet {0, 1} accepts those strings which ends with 1.
+Either<String, DFA<String>> createBinaryNumberEndsWithOneDFA() {
+  final states = {FAState('q0'), FAState('q1')};
+  final binaryAlphabet = {'0', '1'};
+
+  final DFATransitionFn<String> transitions = {
+    (FAState('q0'), '0'): FAState('q0'),
+    (FAState('q0'), '1'): FAState('q1'),
+    (FAState('q1'), '1'): FAState('q1'),
+    (FAState('q1'), '0'): FAState('q0'),
+  };
+
+  final initialState = FAState('q0');
+  final acceptingStates = {FAState('q1')};
+
+  return DFA.createDFA(states, binaryAlphabet, transitions, initialState, acceptingStates);
 }
