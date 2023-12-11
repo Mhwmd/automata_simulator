@@ -39,6 +39,20 @@ class DFA<StateType> {
     });
   }
 
+  DFA<StateType> withoutUnreachableStates() {
+    final newStates = reachableStates;
+
+    final DFATransitionFn<StateType> newTransitionFunction = Map.fromEntries(transitions.entries.where((entry) {
+      final transition = (state: entry.key.$1, symbol: entry.key.$2, nextState: entry.value);
+
+      return newStates.contains(transition.state) && newStates.contains(transition.nextState);
+    }));
+
+    final newAcceptingStates = acceptingStates.intersection(newStates);
+
+    return DFA._(newStates, alphabet, newTransitionFunction, initialState, newAcceptingStates);
+  }
+
   bool isAccepted(String inputString) {
     final transitionSteps = extendedTransitionFunction(initialState, inputString);
 
@@ -96,16 +110,6 @@ class DFA<StateType> {
     });
   }
 
-  String _formatExtendedTransition(String deltaOrState, String remainingString) {
-    return 'δ^($deltaOrState, ${_getStringOrEpsilon(remainingString)})';
-  }
-
-  String _formatTransition(FAState<StateType> currentState, String symbol) {
-    return 'δ(${currentState.name}, $symbol)';
-  }
-
-  String _getStringOrEpsilon(String str) => str.isNotEmpty ? str : 'ε';
-
   List<TransitionStep<StateType>> extendedTransitionFunction(FAState<StateType> state, String inputString) {
     final initialValue = [TransitionStep(state, inputString)];
 
@@ -124,6 +128,30 @@ class DFA<StateType> {
   Option<FAState<StateType>> transitionFunction(FAState<StateType> state, String symbol) {
     return transitions.extract<FAState<StateType>>((state, symbol));
   }
+
+  String _formatExtendedTransition(String deltaOrState, String remainingString) {
+    return 'δ^($deltaOrState, ${_getStringOrEpsilon(remainingString)})';
+  }
+
+  String _formatTransition(FAState<StateType> currentState, String symbol) {
+    return 'δ(${currentState.name}, $symbol)';
+  }
+
+  String _getStringOrEpsilon(String str) => str.isNotEmpty ? str : 'ε';
+
+  Set<FAState<StateType>> _filterReachableStates(FAState<StateType> state, Set<FAState<StateType>> visited) {
+    if (visited.contains(state)) return visited;
+
+    return alphabet
+        .map((symbol) => transitionFunction(state, symbol))
+        .whereType<Some<FAState<StateType>>>()
+        .map((nextState) => nextState.value)
+        .fold(visited.union({state}), (visitedStates, nextState) => _filterReachableStates(nextState, visitedStates));
+  }
+
+  Set<FAState<StateType>> get reachableStates => _filterReachableStates(initialState, {}).toSet();
+
+  Set<FAState<StateType>> get unreachableStates => states.difference(reachableStates);
 
   final Set<FAState<StateType>> states;
   final Set<String> alphabet;
