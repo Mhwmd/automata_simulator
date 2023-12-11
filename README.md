@@ -71,5 +71,99 @@ Either<String, DFA<String>> createDFA() {
   return DFA.createDFA(states, binaryAlphabet, transitions, initialState, acceptingStates);
 }
 ```
+# Checking input accepted by DFA
+
+```dart
+  //..
+  final inputString = '1001;
+  final isAccepted =  dfa.isAccepted(inputString);
+  print(isAccepted);
+```
 
 
+# Machine configuration
+You can generate machine configuration of the DFA for the input string with method `DFA.generateMachineConfiguration`
+
+```dart
+  //..
+  final inputString = '1001;
+  final machineConfiguration =  dfa.generateMachineConfiguration(inputString);
+  print(machineConfiguration);
+```
+Which for the above DFA machine configuration is 
+```
+[q0, 1001]|-[q1, 001]|-[q0, 01]|-[q0, 1]|-[q1, ε]
+```
+
+# Extended Transition Function
+You can generate steps of the extended transition function of the DFA for the input string with method `DFA.generateExtendedTransitionSteps`
+
+Which for the above DFA with input string of 1001 extended transition function steps are
+```
+δ^(q0, 1001)
+ = δ^(δ(q0, 1), 001) => δ^(q1, 001)
+ = δ^(δ(q1, 0), 01) => δ^(q0, 01)
+ = δ^(δ(q0, 0), 1) => δ^(q0, 1)
+ = δ(q0, 1) = q1
+```
+
+#
+Some reports generated for DFA that only accepts unsigned integer and float numbers in the examples folder called `createNumberDFA()` for inputs `451.2351`, `145.`, `12ah` and `1001`
+
+```
+==============================
+Input: 451.2351
+==============================
+Accepted: true
+Machine Configuration: [A, 451.2351]|-[B, 51.2351]|-[B, 1.2351]|-[B, .2351]|-[C, 2351]|-[D, 351]|-[D, 51]|-[D, 1]|-[D, ε]
+Extended Function: δ^(A, 451.2351)
+ = δ^(δ(A, 4), 51.2351) => δ^(B, 51.2351)
+ = δ^(δ(B, 5), 1.2351) => δ^(B, 1.2351)
+ = δ^(δ(B, 1), .2351) => δ^(B, .2351)
+ = δ^(δ(B, .), 2351) => δ^(C, 2351)
+ = δ^(δ(C, 2), 351) => δ^(D, 351)
+ = δ^(δ(D, 3), 51) => δ^(D, 51)
+ = δ^(δ(D, 5), 1) => δ^(D, 1)
+ = δ(D, 1) = D
+
+Accepting States are: B, D
+
+==============================
+Input: 145.
+==============================
+Accepted: false
+Machine Configuration: [A, 145.]|-[B, 45.]|-[B, 5.]|-[B, .]|-[C, ε]
+Extended Function: δ^(A, 145.)
+ = δ^(δ(A, 1), 45.) => δ^(B, 45.)
+ = δ^(δ(B, 4), 5.) => δ^(B, 5.)
+ = δ^(δ(B, 5), .) => δ^(B, .)
+ = δ(B, .) = C
+
+Accepting States are: B, D
+
+==============================
+Input: 12ah
+==============================
+Accepted: false
+Machine Configuration: [A, 12ah]|-[B, 2ah]|-[B, ah]
+Extended Function: δ^(A, 12ah)
+ = δ^(δ(A, 1), 2ah) => δ^(B, 2ah)
+ = δ^(δ(B, 2), ah) => δ^(B, ah)
+ = δ^(δ(B, a), h)
+
+Accepting States are: B, D
+
+==============================
+Input: 1001
+==============================
+Accepted: true
+Machine Configuration: [A, 1001]|-[B, 001]|-[B, 01]|-[B, 1]|-[B, ε]
+Extended Function: δ^(A, 1001)
+ = δ^(δ(A, 1), 001) => δ^(B, 001)
+ = δ^(δ(B, 0), 01) => δ^(B, 01)
+ = δ^(δ(B, 0), 1) => δ^(B, 1)
+ = δ(B, 1) = B
+
+Accepting States are: B, D
+
+```
