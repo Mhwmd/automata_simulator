@@ -50,6 +50,62 @@ class DFA<StateType> {
     });
   }
 
+  String generateMachineConfiguration(String inputString) {
+    final transitionSteps = extendedTransitionFunction(initialState, inputString);
+
+    return transitionSteps.map((step) {
+      return '[${step.currentState.name}, ${_getStringOrEpsilon(step.unprocessedInput)}]';
+    }).join('|-');
+  }
+
+  List<String> generateExtendedTransitionSteps(String inputString) {
+    final transitionSteps = extendedTransitionFunction(initialState, inputString);
+    final firstStep = transitionSteps.first;
+    final initialValue = <String>[
+      _formatExtendedTransition(
+        firstStep.currentState.name.toString(),
+        _getStringOrEpsilon(firstStep.unprocessedInput),
+      )
+    ];
+
+    return transitionSteps.fold(initialValue, (stringSteps, step) {
+      if (step.unprocessedInput.isEmpty) return stringSteps;
+
+      final String symbol = step.unprocessedInput[0];
+      final String remainingString = step.unprocessedInput.substring(1);
+      final String delta = _formatTransition(step.currentState, symbol);
+
+      final nextStateOption = transitionFunction(step.currentState, symbol);
+
+      if (remainingString.isEmpty) {
+        return nextStateOption.fold(
+          () => [...stringSteps, delta],
+          (nextState) => [...stringSteps, '$delta = ${nextState.name}'],
+        );
+      }
+
+      return [
+        ...stringSteps,
+        nextStateOption.fold(
+          () => _formatExtendedTransition(delta, remainingString),
+          (nextState) {
+            return '${_formatExtendedTransition(delta, remainingString)} => ${_formatExtendedTransition(nextState.name.toString(), remainingString)}';
+          },
+        ),
+      ];
+    });
+  }
+
+  String _formatExtendedTransition(String deltaOrState, String remainingString) {
+    return 'δ^($deltaOrState, ${_getStringOrEpsilon(remainingString)})';
+  }
+
+  String _formatTransition(FAState<StateType> currentState, String symbol) {
+    return 'δ(${currentState.name}, $symbol)';
+  }
+
+  String _getStringOrEpsilon(String str) => str.isNotEmpty ? str : 'ε';
+
   List<TransitionStep<StateType>> extendedTransitionFunction(FAState<StateType> state, String remainingString) {
     return _extendedTransitionFunction(state, remainingString, []);
   }
