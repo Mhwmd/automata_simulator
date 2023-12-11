@@ -1,8 +1,8 @@
+import 'package:automata_simulator/src/transition_step.dart';
 import 'package:fpdart/fpdart.dart';
 
 import 'fa_state.dart';
 import 'fa_validator.dart';
-import 'transition_step.dart';
 
 typedef DFATransitionFn<StateType> = Map<(FAState<StateType>, String), FAState<StateType>>;
 
@@ -106,25 +106,19 @@ class DFA<StateType> {
 
   String _getStringOrEpsilon(String str) => str.isNotEmpty ? str : 'ε';
 
-  List<TransitionStep<StateType>> extendedTransitionFunction(FAState<StateType> state, String remainingString) {
-    return _extendedTransitionFunction(state, remainingString, []);
-  }
+  List<TransitionStep<StateType>> extendedTransitionFunction(FAState<StateType> state, String inputString) {
+    final initialValue = [TransitionStep(state, inputString)];
 
-  List<TransitionStep<StateType>> _extendedTransitionFunction(
-    FAState<StateType> state,
-    String remainingString,
-    List<TransitionStep<StateType>> steps,
-  ) {
-    final newSteps = [...steps, TransitionStep(state, remainingString)];
+    return inputString.split('').fold(initialValue, (steps, symbol) {
+      final lastStep = steps.last;
+      final nextUnprocessedInput = lastStep.unprocessedInput.substring(1);
+      final nextStateOption = transitionFunction(lastStep.currentState, symbol);
 
-    if (remainingString.isEmpty) return newSteps;
-
-    final nextStateOption = transitionFunction(state, remainingString[0]);
-
-    return nextStateOption.fold(
-      () => newSteps,
-      (nextState) => _extendedTransitionFunction(nextState, remainingString.substring(1), newSteps),
-    );
+      return nextStateOption.fold(
+        () => steps,
+        (nextState) => [...steps, TransitionStep(nextState, nextUnprocessedInput)],
+      );
+    });
   }
 
   Option<FAState<StateType>> transitionFunction(FAState<StateType> state, String symbol) {
