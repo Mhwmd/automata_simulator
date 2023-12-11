@@ -18,7 +18,7 @@ The Finite Automata Simulator is a powerful tool designed to simulate Finite Aut
 A Deterministic Finite Automaton (DFA) is a theoretical concept in computer science and automata theory. It serves as a mathematical model representing a simple computational device or machine. DFAs belong to the broader category of finite automata, which are used to recognize patterns and structures in strings.
 
 ### Components of a DFA
-A Deterministic Finite Automaton (DFA) is defiend as **M = (Q, Σ, δ, q0, F)**
+A Deterministic Finite Automaton (DFA) is defined as **M = (Q, Σ, δ, q0, F)**
 
 1. **States (Q):** The DFA has a finite set of states, each representing a particular condition or situation the machine can be in at a given moment.
 
@@ -30,7 +30,7 @@ A Deterministic Finite Automaton (DFA) is defiend as **M = (Q, Σ, δ, q0, F)**
 
 5. **Accepting States (F):** A subset of the set of states. If the DFA reaches a state in the accepting states set after processing the entire input string, then the input string is accepted.
 
-7. **Input String:** The DFA processes an input string symbol by symbol, reading one symbol at a time and transitioning between states according to the transition function.
+**Input String:** The DFA processes an input string symbol by symbol, reading one symbol at a time and transitioning between states according to the transition function.
 
 ## Determinism
 
