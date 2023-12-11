@@ -43,8 +43,8 @@ class DFA<StateType> {
     final transitionSteps = extendedTransitionFunction(initialState, inputString);
 
     return transitionSteps.lastOption.match(() => false, (lastStep) {
+      final isEntireInputProcessed = lastStep.unprocessedInput.isEmpty;
       final isDFAStoppedOnAcceptingState = acceptingStates.contains(lastStep.currentState);
-      final isEntireInputProcessed = acceptingStates.contains(lastStep.currentState);
 
       return isEntireInputProcessed && isDFAStoppedOnAcceptingState;
     });
