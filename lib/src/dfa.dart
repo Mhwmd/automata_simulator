@@ -39,6 +39,17 @@ class DFA<StateType> {
     });
   }
 
+  bool isAccepted(String inputString) {
+    final transitionSteps = extendedTransitionFunction(initialState, inputString);
+
+    return transitionSteps.lastOption.match(() => false, (lastStep) {
+      final isDFAStoppedOnAcceptingState = acceptingStates.contains(lastStep.currentState);
+      final isEntireInputProcessed = acceptingStates.contains(lastStep.currentState);
+
+      return isEntireInputProcessed && isDFAStoppedOnAcceptingState;
+    });
+  }
+
   List<TransitionStep<StateType>> extendedTransitionFunction(FAState<StateType> state, String remainingString) {
     return _extendedTransitionFunction(state, remainingString, []);
   }
