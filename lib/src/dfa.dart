@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 
 import 'fa_state.dart';
 import 'fa_validator.dart';
+import 'transition_step.dart';
 
 typedef DFATransitionFn<StateType> = Map<(FAState<StateType>, String), FAState<StateType>>;
 
@@ -36,6 +37,31 @@ class DFA<StateType> {
         });
       });
     });
+  }
+
+  List<TransitionStep<StateType>> extendedTransitionFunction(FAState<StateType> state, String remainingString) {
+    return _extendedTransitionFunction(state, remainingString, []);
+  }
+
+  List<TransitionStep<StateType>> _extendedTransitionFunction(
+    FAState<StateType> state,
+    String remainingString,
+    List<TransitionStep<StateType>> steps,
+  ) {
+    final newSteps = [...steps, TransitionStep(state, remainingString)];
+
+    if (remainingString.isEmpty) return newSteps;
+
+    final nextStateOption = transitionFunction(state, remainingString[0]);
+
+    return nextStateOption.fold(
+      () => newSteps,
+      (nextState) => _extendedTransitionFunction(nextState, remainingString.substring(1), newSteps),
+    );
+  }
+
+  Option<FAState<StateType>> transitionFunction(FAState<StateType> state, String symbol) {
+    return transitions.extract<FAState<StateType>>((state, symbol));
   }
 
   final Set<FAState<StateType>> states;
