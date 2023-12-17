@@ -6,6 +6,7 @@ environment:
   sdk: ^3.2.3
 
 dependencies:
+  collection: ^1.18.0
   equatable: ^2.0.5
   fpdart: ^1.1.0
 
