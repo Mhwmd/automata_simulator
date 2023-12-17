@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fpdart/fpdart.dart';
 
 import 'fa_state.dart';
@@ -38,6 +39,41 @@ class NFA<StateType> {
         });
       });
     });
+  }
+
+  bool isAccepted(String input) {
+    final initialValue = epsilonClosure({initialState});
+
+    final Set<FAState<StateType>> currentStates = input.split('').fold(initialValue, (states, symbol) {
+      return epsilonClosure(move(states, symbol));
+    });
+
+    return currentStates.any(finalStates.contains);
+  }
+
+  Set<FAState<StateType>> epsilonClosure(Set<FAState<StateType>> states) {
+    return states.flatMap((state) => _epsilonClosure(state, {})).toSet();
+  }
+
+  Set<FAState<StateType>> move(Set<FAState<StateType>> states, String symbol) {
+    return states.flatMap((state) => _move(state, symbol)).toSet();
+  }
+
+  Set<FAState<StateType>> _epsilonClosure(FAState<StateType> state, Set<FAState<StateType>> visitedStates) {
+    final Set<FAState<StateType>> newStates = _reachableStates(state, None())
+        .whereNot(visitedStates.contains)
+        .flatMap((nextState) => _epsilonClosure(nextState, {...visitedStates, state}))
+        .toSet();
+
+    return visitedStates.union(newStates).union({state});
+  }
+
+  Set<FAState<StateType>> _move(FAState<StateType> state, String symbol) {
+    return _reachableStates(state, Some(symbol));
+  }
+
+  Set<FAState<StateType>> _reachableStates(FAState<StateType> state, Option<String> symbol) {
+    return transitionFunction(state, symbol).getOrElse(() => {});
   }
 
   Option<Set<FAState<StateType>>> transitionFunction(FAState<StateType> state, Option<String> symbol) {
