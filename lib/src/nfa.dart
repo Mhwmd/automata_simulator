@@ -40,6 +40,10 @@ class NFA<StateType> {
     });
   }
 
+  Option<Set<FAState<StateType>>> transitionFunction(FAState<StateType> state, Option<String> symbol) {
+    return transitions.extract<Set<FAState<StateType>>>((state, symbol));
+  }
+
   final Set<FAState<StateType>> states;
   final Set<String> alphabet;
   final NFATransitionFn<StateType> transitions;
