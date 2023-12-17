@@ -39,6 +39,29 @@ class DFA<StateType> {
     });
   }
 
+  DFA<StateType> toComplete(FAState<StateType> Function(Set<FAState<StateType>> states) genSinkState) {
+    if (isComplete) return this;
+
+    final sinkState = genSinkState(states);
+    return _complete(sinkState);
+  }
+
+  DFA<StateType> _complete(FAState<StateType> sinkState) {
+    final newStates = states.union({sinkState});
+
+    final transitionEntries = newStates.flatMap((state) {
+      return alphabet.map((symbol) {
+        final nextState = transitionFunction(state, symbol);
+
+        return MapEntry((state, symbol), nextState.getOrElse(() => sinkState));
+      });
+    });
+
+    final newTransitions = DFATransitionFn<StateType>.fromEntries(transitionEntries);
+
+    return DFA._(newStates, alphabet, newTransitions, initialState, acceptingStates);
+  }
+
   DFA<StateType> withoutUnreachableStates() {
     final newStates = reachableStates;
 
@@ -147,6 +170,14 @@ class DFA<StateType> {
         .whereType<Some<FAState<StateType>>>()
         .map((nextState) => nextState.value)
         .fold(visited.union({state}), (visitedStates, nextState) => _filterReachableStates(nextState, visitedStates));
+  }
+
+  bool get isComplete {
+    return states.every((state) {
+      return alphabet.every((symbol) {
+        return transitionFunction(state, symbol).isSome();
+      });
+    });
   }
 
   Set<FAState<StateType>> get reachableStates => _filterReachableStates(initialState, {}).toSet();
