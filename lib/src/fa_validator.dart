@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 
 import 'dfa.dart';
 import 'fa_state.dart';
+import 'nfa.dart';
 
 class FAValidator {
   FAValidator._();
@@ -61,6 +62,28 @@ class FAValidator {
       },
       (_) {
         return 'All transitions in the transition function must have states and symbols that belong to the defined sets (states and alphabet).';
+      },
+    );
+  }
+
+  static Either<String, NFATransitionFn<T>> ensureAllNFATransitionsValid<T>(
+    NFATransitionFn<T> transitions,
+    Set<FAState<T>> states,
+    Set<String> alphabet,
+  ) {
+    return Either.fromPredicate(
+      transitions,
+      (transitions) {
+        return transitions.entries.every((fn) {
+          final transition = (state: fn.key.$1, symbol: fn.key.$2, nextStates: fn.value);
+
+          return states.contains(transition.state) &&
+              transition.nextStates.every(states.contains) &&
+              transition.symbol.match(() => true, alphabet.contains);
+        });
+      },
+      (_) {
+        return 'All transitions in the transition function must have states and symbols that belong to the defined sets (states and (alphabet or lambda)).';
       },
     );
   }
