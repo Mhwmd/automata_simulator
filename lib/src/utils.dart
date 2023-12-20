@@ -3,12 +3,21 @@ import 'dart:collection';
 import 'package:equatable/equatable.dart';
 
 class EquatableSet<T> extends SetBase<T> with EquatableMixin {
-  final Set<T> _base;
-
   EquatableSet(this._base);
+
+  final Set<T> _base;
 
   @override
   bool add(T value) => _base.add(value);
+
+  @override
+  Set<T> difference(Set<Object?> other) => _base.difference(other);
+
+  @override
+  Set<T> intersection(Set<Object?> other) => _base.intersection(other);
+
+  @override
+  Set<T> union(Set<T> other) => _base.union(other);
 
   @override
   bool contains(Object? element) => _base.contains(element);
@@ -36,9 +45,9 @@ class EquatableSet<T> extends SetBase<T> with EquatableMixin {
 }
 
 class EquatableList<T> extends ListBase<T> with EquatableMixin {
-  final List<T> _base;
-
   const EquatableList(this._base);
+
+  final List<T> _base;
 
   @override
   T operator [](int index) => _base[index];
