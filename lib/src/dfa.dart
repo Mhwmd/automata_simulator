@@ -1,4 +1,4 @@
-import 'package:automata_simulator/src/transition_step.dart';
+import 'package:automata_simulator/src/machine_configuration.dart';
 import 'package:fpdart/fpdart.dart';
 
 import 'fa_state.dart';
@@ -133,8 +133,8 @@ class DFA<StateType> {
     });
   }
 
-  List<TransitionStep<StateType>> extendedTransitionFunction(FAState<StateType> state, String inputString) {
-    final initialValue = [TransitionStep(state, inputString)];
+  List<MachineConfiguration<StateType>> extendedTransitionFunction(FAState<StateType> state, String inputString) {
+    final initialValue = [MachineConfiguration(state, inputString)];
 
     return inputString.split('').fold(initialValue, (steps, symbol) {
       final lastStep = steps.last;
@@ -143,7 +143,7 @@ class DFA<StateType> {
 
       return nextStateOption.fold(
         () => steps,
-        (nextState) => [...steps, TransitionStep(nextState, nextUnprocessedInput)],
+        (nextState) => [...steps, MachineConfiguration(nextState, nextUnprocessedInput)],
       );
     });
   }
