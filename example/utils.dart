@@ -18,13 +18,23 @@ String generateDFAReportForInput(DFA dfa, String inputString) {
   return stringBuffer.toString();
 }
 
-String prettyDFA(DFA dfa) {
+String prettyDFA<T>(DFA<T> dfa) {
   final String transitionFn = dfa.transitions.entries
       .map((entry) => '&(${entry.key.$1.name}, ${entry.key.$2}) = ${entry.value.name}')
       .join('\n');
 
   final String machine =
       'M({${dfa.states.map((e) => e.name).join(', ')}}, ${dfa.alphabet}, &, ${dfa.initialState.name}, {${dfa.acceptingStates.map((e) => e.name).join(', ')}})';
+
+  return '$machine\n$transitionFn';
+}
+
+String prettyNFA<T>(NFA<T> nfa) {
+  final String transitionFn = nfa.transitions.entries
+      .map((entry) => '&(${entry.key.$1.name}, ${entry.key.$2}) = [${entry.value.map((e) => e.name).join(', ')}]')
+      .join('\n');
+  final String machine =
+      'M({${nfa.states.map((e) => e.name).join(', ')}}, ${nfa.alphabet}, &, ${nfa.initialState.name}, {${nfa.acceptingStates.map((e) => e.name).join(', ')}})';
 
   return '$machine\n$transitionFn';
 }
