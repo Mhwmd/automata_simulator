@@ -10,7 +10,7 @@ typedef FAStateSet<T> = EquatableSet<FAState<T>>;
 typedef NFATransitionFn<T> = Map<(FAState<T>, Option<String>), Set<FAState<T>>>;
 
 class NFA<StateType> {
-  NFA._(this.states, this.alphabet, this.transitions, this.initialState, this.finalStates);
+  NFA._(this.states, this.alphabet, this.transitions, this.initialState, this.acceptingStates);
 
   static Either<String, NFA<StateType>> createNFA<StateType>(
     Set<FAState<StateType>> states,
@@ -73,14 +73,14 @@ class NFA<StateType> {
       dfaSubsetConstructionTable = [...dfaSubsetConstructionTable, ...dfaTransitionsForAlphabet];
     }
 
-    final dfaFinalStates = dfaStates.where((state) => state.any(finalStates.contains)).toSet();
+    final dfaAcceptingStates = dfaStates.where((state) => state.any(acceptingStates.contains)).toSet();
 
     return _createDFA(
       dfaStates,
       dfaAlphabet,
       dfaSubsetConstructionTable,
       dfaInitialState,
-      dfaFinalStates,
+      dfaAcceptingStates,
       _convertToState,
     );
   }
@@ -92,7 +92,7 @@ class NFA<StateType> {
       return epsilonClosure(move(states, symbol));
     });
 
-    return currentStates.any(finalStates.contains);
+    return currentStates.any(acceptingStates.contains);
   }
 
   Set<FAState<StateType>> epsilonClosure(Set<FAState<StateType>> states) {
@@ -112,7 +112,7 @@ class NFA<StateType> {
     Set<String> alphabet,
     List<({FAStateSet<StateType> from, String symbol, FAStateSet<StateType> to})> subsetConstructionTable,
     FAStateSet<StateType> initialState,
-    Set<FAStateSet<StateType>> finalStates,
+    Set<FAStateSet<StateType>> acceptingStates,
     FAState<T> Function(int index, FAStateSet<StateType> states) namingFunction,
   ) {
     final dfaWithCorrespondingNFAStates = Map<FAState<T>, FAStateSet<StateType>>.fromEntries(
@@ -129,7 +129,8 @@ class NFA<StateType> {
 
     final namedDFAStates = states.where((_) => _.isNotEmpty).map(getStateFromCorrespondingNFAStates).toSet();
     final namedInitialState = getStateFromCorrespondingNFAStates(initialState);
-    final namedDFAFinalStates = finalStates.where((_) => _.isNotEmpty).map(getStateFromCorrespondingNFAStates).toSet();
+    final namedDFAAcceptingStates =
+        acceptingStates.where((_) => _.isNotEmpty).map(getStateFromCorrespondingNFAStates).toSet();
 
     final namedTransitionFunction = Map.fromEntries(
       subsetConstructionTable.where((_) => _.from.isNotEmpty && _.to.isNotEmpty).map((_) {
@@ -140,7 +141,7 @@ class NFA<StateType> {
       }),
     );
 
-    return DFA.createDFA(namedDFAStates, alphabet, namedTransitionFunction, namedInitialState, namedDFAFinalStates);
+    return DFA.createDFA(namedDFAStates, alphabet, namedTransitionFunction, namedInitialState, namedDFAAcceptingStates);
   }
 
   FAState<String> _convertToState(int index, FAStateSet<StateType> states) {
@@ -168,5 +169,5 @@ class NFA<StateType> {
   final Set<String> alphabet;
   final NFATransitionFn<StateType> transitions;
   final FAState<StateType> initialState;
-  final Set<FAState<StateType>> finalStates;
+  final Set<FAState<StateType>> acceptingStates;
 }
