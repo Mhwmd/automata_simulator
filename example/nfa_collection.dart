@@ -105,3 +105,59 @@ Either<String, NFA<String>> createNFA4() {
 
   return NFA.createNFA(states, alphabet, transitions, initialState, acceptingStates);
 }
+
+Either<String, NFA<String>> createNFA5() {
+  final states = {FAState('q0'), FAState('q1'), FAState('q2')};
+  final Set<String> alphabet = {'0', '1', '2'};
+
+  final NFATransitionFn<String> transitions = {
+    (FAState('q0'), Some('0')): {FAState('q0')},
+    (FAState('q0'), None()): {FAState('q1')},
+    (FAState('q1'), Some('1')): {FAState('q1')},
+    (FAState('q1'), None()): {FAState('q2')},
+    (FAState('q2'), Some('2')): {FAState('q2')},
+  };
+
+  final initialState = FAState('q0');
+  final acceptingStates = {FAState('q2')};
+
+  return NFA.createNFA(states, alphabet, transitions, initialState, acceptingStates);
+}
+
+Either<String, NFA<String>> createNFA6() {
+  final states = {FAState('q0'), FAState('q1'), FAState('q2')};
+  final Set<String> alphabet = {'a', 'b'};
+
+  final NFATransitionFn<String> transitions = {
+    (FAState('q0'), Some('a')): {FAState('q1')},
+    (FAState('q1'), None()): {FAState('q2')},
+    (FAState('q2'), Some('b')): {FAState('q2')},
+  };
+
+  final initialState = FAState('q0');
+  final acceptingStates = {FAState('q2')};
+
+  return NFA.createNFA(states, alphabet, transitions, initialState, acceptingStates);
+}
+
+Either<String, NFA<String>> createNFA7() {
+  final states = {FAState('q0'), FAState('q1'), FAState('q2'), FAState('q3'), FAState('q4'), FAState('q5')};
+  final Set<String> alphabet = {'a', 'b'};
+
+  final NFATransitionFn<String> transitions = {
+    (FAState('q0'), None()): {FAState('q1')},
+    (FAState('q0'), Some('b')): {FAState('q3')},
+    (FAState('q1'), None()): {FAState('q2')},
+    (FAState('q1'), Some('a')): {FAState('q3')},
+    (FAState('q2'), Some('a')): {FAState('q4')},
+    (FAState('q3'), None()): {FAState('q2')},
+    (FAState('q3'), Some('b')): {FAState('q5')},
+    (FAState('q4'), Some('b')): {FAState('q3')},
+    (FAState('q4'), Some('a')): {FAState('q5')},
+  };
+
+  final initialState = FAState('q0');
+  final acceptingStates = {FAState('q5')};
+
+  return NFA.createNFA(states, alphabet, transitions, initialState, acceptingStates);
+}

@@ -42,6 +42,21 @@ class NFA<StateType> {
     });
   }
 
+  // TODO: Remove unnecessary and dead states
+  NFA<StateType> eliminateEpsilonTransitions() {
+    final newTransitions = Map.fromEntries(states.flatMap((state) {
+      return alphabet.map((symbol) {
+        final nextStates = epsilonClosure(move(epsilonClosure({state}), symbol));
+
+        return MapEntry((state, Some(symbol)), nextStates);
+      });
+    }));
+
+    final newAcceptingStates = states.where((state) => epsilonClosure({state}).any(acceptingStates.contains)).toSet();
+
+    return NFA._(states, alphabet, newTransitions, initialState, newAcceptingStates);
+  }
+
   Either<String, DFA<String>> toDFA() {
     final Set<String> dfaAlphabet = alphabet;
     final FAStateSet<StateType> dfaInitialState = EquatableSet(epsilonClosure({initialState}));
