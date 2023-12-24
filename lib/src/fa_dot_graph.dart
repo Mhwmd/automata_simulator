@@ -26,10 +26,10 @@ class FADotGraph {
     stringBuffer.writeln('');
 
     if (nonAcceptingStates.isNotEmpty) {
-      stringBuffer.writeln(_indent(1, _nonAcceptingNode(nonAcceptingStates.map((e) => e.name.toString()).join(' '))));
+      stringBuffer.writeln(_indent(1, _nonAcceptingNodes(nonAcceptingStates.map((e) => e.name.toString()).toSet())));
     }
     if (dfa.acceptingStates.isNotEmpty) {
-      stringBuffer.writeln(_indent(1, _acceptingNode(dfa.acceptingStates.map((e) => e.name.toString()).join(' '))));
+      stringBuffer.writeln(_indent(1, _acceptingNodes(dfa.acceptingStates.map((e) => e.name.toString()).toSet())));
     }
     stringBuffer.writeln('');
 
@@ -71,10 +71,10 @@ class FADotGraph {
     stringBuffer.writeln('');
 
     if (nonAcceptingStates.isNotEmpty) {
-      stringBuffer.writeln(_indent(1, _nonAcceptingNode(nonAcceptingStates.map((e) => e.name.toString()).join(' '))));
+      stringBuffer.writeln(_indent(1, _nonAcceptingNodes(nonAcceptingStates.map((e) => e.name.toString()).toSet())));
     }
     if (nfa.acceptingStates.isNotEmpty) {
-      stringBuffer.writeln(_indent(1, _acceptingNode(nfa.acceptingStates.map((e) => e.name.toString()).join(' '))));
+      stringBuffer.writeln(_indent(1, _acceptingNodes(nfa.acceptingStates.map((e) => e.name.toString()).toSet())));
     }
     stringBuffer.writeln('');
 
@@ -144,15 +144,19 @@ class FADotGraph {
 
   static String _indent(int n, String str) => '\t' * n + str;
 
-  static String _node(String shape, String nodeName) => 'node [shape = $shape ]; $nodeName;';
+  static String _wrapInDoubleQuotes(String str) => '"$str"';
 
-  static String _acceptingNode(String nodeName) => _node('doublecircle', nodeName);
+  static String _nodes(String shape, Set<String> nodesName) {
+    return 'node [shape = $shape ]; ${nodesName.map(_wrapInDoubleQuotes).join(' ')};';
+  }
 
-  static String _nonAcceptingNode(String nodeName) => _node('circle', nodeName);
+  static String _acceptingNodes(Set<String> nodesName) => _nodes('doublecircle', nodesName);
 
-  static String _startNode(String nodeName) => _node('point', nodeName);
+  static String _nonAcceptingNodes(Set<String> nodesName) => _nodes('circle', nodesName);
+
+  static String _startNode(String nodeName) => _nodes('point', {nodeName});
 
   static String _transitionNode(String fromNodeName, String toNodeName, String label) {
-    return '$fromNodeName -> $toNodeName [ label = "$label" ];';
+    return '${_wrapInDoubleQuotes(fromNodeName)} -> ${_wrapInDoubleQuotes(toNodeName)} [ label = "$label" ];';
   }
 }
