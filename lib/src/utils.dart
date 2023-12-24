@@ -67,3 +67,12 @@ class EquatableList<T> extends ListBase<T> with EquatableMixin {
   @override
   String toString() => _base.toString();
 }
+
+extension ImmutableMap<K, V> on Map<K, V> {
+  Map<K, V> immutableUpdate(K key, V Function(V value) update, {required V Function() ifAbsent}) {
+    final newMap = Map<K, V>.from(this);
+    newMap.update(key, update, ifAbsent: ifAbsent);
+
+    return newMap;
+  }
+}
