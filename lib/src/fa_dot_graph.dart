@@ -1,6 +1,8 @@
+import 'package:automata_simulator/src/machine_configuration.dart';
 import 'package:automata_simulator/src/utils.dart';
 import 'package:fpdart/fpdart.dart';
 
+import 'computation_tree.dart';
 import 'dfa.dart';
 import 'fa_state.dart';
 import 'nfa.dart';
@@ -94,6 +96,75 @@ class FADotGraph {
         ),
       ));
     });
+
+    stringBuffer.writeln('}');
+
+    return stringBuffer.toString();
+  }
+
+  static String exportNFAComputationTree<StateType>(NFA<StateType> nfa, ComputationTree<StateType> computationTree) {
+    final List<({int nodeId, MachineConfiguration<StateType> machineConfiguration, bool isLeaf})> nodesInfo = [];
+    final List<({int nodeId, List<int> childrenNodeIds, String symbol})> edgesInfo = [];
+
+    void prepareComputationTreeForDot(ComputationTree<StateType> node) {
+      final machineConfiguration = node.machineConfiguration;
+
+      nodesInfo.add((
+        nodeId: node.id,
+        machineConfiguration: machineConfiguration,
+        isLeaf: node.isLeaf,
+      ));
+
+      if (!node.isLeaf) {
+        final String symbol = node.machineConfiguration.unprocessedInput[0];
+        final childrenNodeIds = node.children.map((child) => child.id).toList();
+
+        edgesInfo.add((nodeId: node.id, childrenNodeIds: childrenNodeIds, symbol: symbol));
+
+        node.children.forEach(prepareComputationTreeForDot);
+      }
+    }
+
+    prepareComputationTreeForDot(computationTree);
+
+    final StringBuffer stringBuffer = StringBuffer();
+    stringBuffer.writeln('digraph ComputationTree {');
+
+    stringBuffer.writeln(_indent(1, 'rankdir=TB;'));
+    stringBuffer.writeln(_indent(1, 'size="8,5";'));
+    stringBuffer.writeln('');
+
+    for (var nodeInfo in nodesInfo) {
+      final isAcceptingState = nfa.acceptingStates.contains(nodeInfo.machineConfiguration.currentState);
+      final String shape = isAcceptingState ? 'doublecircle' : 'circle';
+
+      bool isAcceptedLeaf = false;
+      if (nodeInfo.isLeaf) {
+        final isDeadConfiguration = nodeInfo.machineConfiguration.unprocessedInput.isNotEmpty;
+        final isDFAStoppedOnAcceptingState = nfa.acceptingStates.contains(nodeInfo.machineConfiguration.currentState);
+
+        isAcceptedLeaf = !isDeadConfiguration && isDFAStoppedOnAcceptingState;
+      }
+
+      final String color = isAcceptedLeaf ? 'green' : 'red';
+      stringBuffer.writeln(
+        _indent(
+          1,
+          '"${nodeInfo.nodeId}" [ shape = $shape ${nodeInfo.isLeaf ? 'color = "$color"' : ''} label = "${nodeInfo.machineConfiguration.currentState.name}" ];',
+        ),
+      );
+    }
+
+    stringBuffer.writeln('');
+
+    for (var edgeInfo in edgesInfo) {
+      stringBuffer.writeln(
+        _indent(
+          1,
+          '"${edgeInfo.nodeId}" -> {${edgeInfo.childrenNodeIds.map((e) => '"$e"').join(' ')}} [ label = "  ${edgeInfo.symbol}  " ];',
+        ),
+      );
+    }
 
     stringBuffer.writeln('}');
 
