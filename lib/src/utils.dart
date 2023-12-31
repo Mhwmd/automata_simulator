@@ -2,6 +2,10 @@ import 'dart:collection';
 
 import 'package:equatable/equatable.dart';
 
+Set<T> union<T>(Set<T> lhs, Set<T> rhs) {
+  return lhs.union(rhs);
+}
+
 class EquatableSet<T> extends SetBase<T> with EquatableMixin {
   EquatableSet(this._base);
 
