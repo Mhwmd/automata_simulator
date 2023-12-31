@@ -1,9 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:fpdart/fpdart.dart';
 
+import 'computation_tree.dart';
 import 'dfa.dart';
 import 'fa_state.dart';
 import 'fa_validator.dart';
+import 'machine_configuration.dart';
 import 'utils.dart';
 
 typedef FAStateSet<T> = EquatableSet<FAState<T>>;
@@ -40,6 +42,20 @@ class NFA<StateType> {
         });
       });
     });
+  }
+
+  Either<String, Stream<List<MachineConfiguration<StateType>>>> getAllAcceptedTraces(String input) {
+    return buildComputationTree(input).map((tree) {
+      return _allRootToLeafTracesStream(tree).where(_checkTraceIsAccepted);
+    });
+  }
+
+  Either<String, ComputationTree<StateType>> buildComputationTree(String input) {
+    if (isEpsilonNFA) return Left('Computation tree for epsilon-NFA not implemented yet.');
+
+    final (_, computationTree) = _buildComputationTree(initialState, input, depth: 0, nodeId: 0);
+
+    return Right(computationTree);
   }
 
   // TODO: Remove unnecessary and dead states
@@ -120,6 +136,66 @@ class NFA<StateType> {
 
   Option<Set<FAState<StateType>>> transitionFunction(FAState<StateType> state, Option<String> symbol) {
     return transitions.extract<Set<FAState<StateType>>>((state, symbol));
+  }
+
+  bool _checkTraceIsAccepted(List<MachineConfiguration<StateType>> trace) {
+    final lastMachineConfiguration = trace.last;
+
+    final isDeadConfiguration = lastMachineConfiguration.unprocessedInput.isNotEmpty;
+    final isNFAStoppedOnAcceptingState = acceptingStates.contains(lastMachineConfiguration.currentState);
+
+    return !isDeadConfiguration && isNFAStoppedOnAcceptingState;
+  }
+
+  Stream<List<MachineConfiguration<StateType>>> _allRootToLeafTracesStream(ComputationTree<StateType> tree) {
+    Stream<List<MachineConfiguration<StateType>>> dfsStream(
+      ComputationTree<StateType> node,
+      List<MachineConfiguration<StateType>> currentTrace,
+    ) async* {
+      final newTrace = [...currentTrace, node.machineConfiguration];
+
+      if (node.isLeaf) {
+        yield newTrace;
+      } else {
+        for (var child in node.children) {
+          yield* dfsStream(child, newTrace);
+        }
+      }
+    }
+
+    return dfsStream(tree, []);
+  }
+
+  (int, ComputationTree<StateType>) _buildComputationTree(
+    FAState<StateType> currentState,
+    String unprocessedInput, {
+    required int depth,
+    required int nodeId,
+  }) {
+    final configuration = MachineConfiguration(currentState, unprocessedInput);
+
+    if (unprocessedInput.isEmpty) return (nodeId, ComputationTree(configuration, id: nodeId, depth: depth));
+
+    final nextStates = _move(currentState, unprocessedInput[0]);
+
+    if (nextStates.isEmpty) return (nodeId, ComputationTree(configuration, id: nodeId, depth: depth));
+
+    final initialValue = (lastNodeId: nodeId + 1, children: <ComputationTree<StateType>>[]);
+    final (lastNodeId: lastChildrenNodeId, children: children) = nextStates.foldIndexed(
+      initialValue,
+      (index, res, nextState) {
+        final (lastNodeId, computationTree) = _buildComputationTree(
+          nextState,
+          unprocessedInput.substring(1),
+          depth: depth + 1,
+          nodeId: res.lastNodeId + index,
+        );
+
+        return (lastNodeId: lastNodeId, children: [...res.children, computationTree]);
+      },
+    );
+
+    return (lastChildrenNodeId, ComputationTree(configuration, id: nodeId, depth: depth, children: children));
   }
 
   Either<String, DFA<T>> _createDFA<T>(
