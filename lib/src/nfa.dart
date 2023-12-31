@@ -111,11 +111,11 @@ class NFA<StateType> {
   }
 
   Set<FAState<StateType>> epsilonClosure(Set<FAState<StateType>> states) {
-    return states.flatMap((state) => _epsilonClosure(state, {})).toSet();
+    return states.map((state) => _epsilonClosure(state, {})).fold({}, union);
   }
 
   Set<FAState<StateType>> move(Set<FAState<StateType>> states, String symbol) {
-    return states.flatMap((state) => _move(state, symbol)).toSet();
+    return states.map((state) => _move(state, symbol)).fold({}, union);
   }
 
   Option<Set<FAState<StateType>>> transitionFunction(FAState<StateType> state, Option<String> symbol) {
@@ -178,6 +178,12 @@ class NFA<StateType> {
 
   Set<FAState<StateType>> _reachableStates(FAState<StateType> state, Option<String> symbol) {
     return transitionFunction(state, symbol).getOrElse(() => {});
+  }
+
+  bool get isEpsilonNFA {
+    return transitions.keys.map((e) => e.$2).any((symbolOption) {
+      return symbolOption.isNone();
+    });
   }
 
   final Set<FAState<StateType>> states;
